@@ -1,0 +1,15 @@
+# Node.js
+node_modules/
+dist/
+build/
+.env
+
+# Django/Python
+*.pyc
+__pycache__/
+venv/
+db.sqlite3
+
+# AWS/OS
+.aws/
+.DS_Store
