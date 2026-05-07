@@ -12,41 +12,42 @@ task-portfolio/
 ├── .git/
 ├── .gitignore
 ├── README.md
-├── deploy.sh                       # AWS CLIによる自動デプロイ (将来実装)
+├── .env.example                    # 環境変数テンプレート (Step7)
+├── deploy.sh                       # AWS CLIによる自動デプロイ (Step7で整備済み)
 ├── frontend/                       # React (Vite) プロジェクト
-│   ├── index.html                  # Google Fontsの読み込み含む
-│   ├── package.json
+│   ├── index.html
+│   ├── package.json                # react-markdown / remark-gfm を追加
 │   ├── vite.config.js
 │   └── src/
 │       ├── main.jsx
 │       ├── App.jsx                 # タブ/モーダル/Dialog状態の集約
-│       ├── index.css               # グローバルCSS (CSS変数 / PCBテクスチャ / LCD)
+│       ├── index.css               # グローバルCSS + .log-md (Markdown描画用)
 │       ├── components/
-│       │   ├── Header.jsx          # タイトル + LCD時計 + LCDモード切替ボタン
-│       │   ├── ChipRow.jsx         # 装飾チップ・抵抗・LED
-│       │   ├── Tabs.jsx            # CH01〜CH04 タブ切替
-│       │   ├── Screen.jsx          # ステータスバー + パネル切替
-│       │   ├── CommandBar.jsx      # はなす / しらべる / もちもの / れんらく
-│       │   ├── Dialog.jsx          # MOTHER風ダイアログ (タイプライタ表示)
+│       │   ├── Header.jsx          # タイトル + LCD時計 + LCDモード切替 (SVGアイコン)
+│       │   ├── ChipRow.jsx
+│       │   ├── Tabs.jsx
+│       │   ├── Screen.jsx
+│       │   ├── CommandBar.jsx
+│       │   ├── Dialog.jsx
 │       │   ├── DatasheetModal.jsx  # WORKS詳細モーダル (フォーカストラップ対応)
-│       │   ├── LogModal.jsx        # WRITING詳細モーダル (フォーカストラップ対応)
-│       │   ├── Footer.jsx          # コピーライト + ビルドID + uptime
-│       │   ├── BoardTraces.jsx     # 背景SVG回路トレース
+│       │   ├── LogModal.jsx        # WRITING詳細モーダル (Markdown描画対応)
+│       │   ├── Footer.jsx
+│       │   ├── BoardTraces.jsx
 │       │   └── panels/
-│       │       ├── About.jsx       # AboutLine 定期切替 + タイプライタ表示
-│       │       ├── Works.jsx       # クリックで DatasheetModal を発火
+│       │       ├── About.jsx       # AboutLine 定期切替
+│       │       ├── Works.jsx
 │       │       ├── Skills.jsx
-│       │       └── Writing.jsx     # クリックで LogModal を発火
+│       │       └── Writing.jsx
 │       ├── data/
-│       │   ├── works.js            # WORKSデータ (4件)
-│       │   └── logs.js             # WRITINGダミーデータ (5件)
+│       │   ├── works.js
+│       │   └── logs.js             # body フィールド追加 (1件LIVE)
 │       └── hooks/
-│           ├── useClock.js         # LCD時計
-│           ├── useUptime.js        # uptimeカウント
-│           ├── useLcdMode.js       # LCDダーク/ライト切替
-│           ├── useTypewriter.js    # タイピングアニメ
-│           ├── useRandomId.js      # 起動毎ランダムID (Serial / BuildID)
-│           └── useFocusTrap.js     # モーダル内フォーカストラップ (Step6)
+│           ├── useClock.js
+│           ├── useUptime.js
+│           ├── useLcdMode.js
+│           ├── useTypewriter.js
+│           ├── useRandomId.js
+│           └── useFocusTrap.js
 └── backend/                        # Django (将来実装)
     └── requirements.txt
 ```
@@ -67,11 +68,50 @@ npm run dev
 
 ## ビルド & デプロイ
 
+### ローカルビルドのみ
+
 ```bash
 cd frontend
 npm run build   # dist/ に出力
-# S3へのデプロイは deploy.sh で実装予定
 ```
+
+### S3 + CloudFront へデプロイ
+
+```bash
+# 1. 初回のみ: .env を作成
+cp .env.example .env
+# BUCKET_NAME と DISTRIBUTION_ID を .env に記入
+
+# 2. 実行権限付与 (初回のみ)
+chmod +x deploy.sh
+
+# 3. デプロイ実行
+./deploy.sh
+
+# 4. Invalidation完了まで待ちたい場合 (CI等)
+./deploy.sh --wait
+```
+
+---
+
+## CloudFront SPA対応 (初回のみ)
+
+SPAはすべてのパスを `/index.html` で受ける必要がある。
+S3に存在しないパスへの直接アクセス・リロード時に403/404が返らないよう、
+CloudFront のカスタムエラーページを以下のように設定する。
+
+```
+AWSコンソール → CloudFront → 対象ディストリビューション
+→ [エラーページ] タブ → [カスタムエラーレスポンスを作成]
+
+設定値 (403 / 404 それぞれ同じ内容で作成):
+  HTTPエラーコード         : 403 (または 404)
+  TTL (キャッシュ保持時間) : 0
+  レスポンスページのパス   : /index.html
+  HTTPレスポンスコード     : 200
+```
+
+> TTLを0にする理由: エラーページをキャッシュすると、正常ページに変わった後も古いレスポンスが返り続けるリスクがある。
 
 ---
 
@@ -103,21 +143,28 @@ npm run build   # dist/ に出力
 | 5 | App | モーダル/Dialog状態を集約 (selectedWork / selectedLog / dialogText) |
 | 5 | `useRandomId` / Serial / BuildID | 起動時にランダム生成して Header / Footer に表示 |
 | 6 | AboutLine | 自己紹介文の定期切替 (8秒ごと) + タイプライタ表示 |
-| **6** | **`useFocusTrap`** | **モーダル内のTabフォーカスを閉じ込め、閉時は呼び出し元へ復帰** |
-| **6** | **DatasheetModal / LogModal** | **`useFocusTrap` を組み込みアクセシビリティ強化** |
-| **6** | **Header (icon bind)** | **LCDモード切替ボタンのアイコンを mode 連動に修正 (◐⇄◑)** |
-| **6** | **Header (a11y)** | **LCDモードボタンに aria-label を付与** |
-| **6** | **Dialog (typewriter)** | **`useTypewriter` の引数をオブジェクト形式に統一 (`{ speed: 36 }`)** |
+| 6 | `useFocusTrap` | モーダル内のTabフォーカスを閉じ込め、閉時は呼び出し元へ復帰 |
+| 6 | DatasheetModal / LogModal | `useFocusTrap` を組み込みアクセシビリティ強化 |
+| 6 | Header (icon) | LCDモード切替ボタンのアイコンをSVG化 (Unicode依存を排除) |
+| 6 | Header (a11y) | LCDモードボタンに aria-label を付与 |
+| 6 | Dialog (typewriter) | `useTypewriter` の引数をオブジェクト形式に統一 |
+| 6 | LogModal (Markdown) | `react-markdown` + `remark-gfm` で本文をMarkdown描画 |
+| 6 | logs.js (body field) | `body` フィールド追加。`excerpt` フォールバック対応 |
+| 6 | 読了分数の自動算出 | 本文文字数から推計 (約500字/分) |
+| 6 | `.log-md` CSS | 見出し / リスト / 引用 / コード / テーブル等のスタイル定義 |
+| **7** | **deploy.sh 堅牢化** | **`set -e` でビルド失敗時に停止 / `DISTRIBUTION_ID` チェック追加 / `--wait` オプション** |
+| **7** | **`.env.example`** | **`BUCKET_NAME` / `DISTRIBUTION_ID` のテンプレートをコミット** |
+| **7** | **CloudFront SPA対応** | **403/404 → `/index.html` (200) のカスタムエラーページ設定をREADMEにドキュメント化** |
 
 ### 未実装 (次フェーズ)
 
-| Step | 対象 | 内容 |
-|---|---|---|
-| 6 | LogModal本文 | ダミー以外の本文 (Markdown対応など) |
-| 7 | Backend (Django) | 問い合わせフォーム / LOGのCMS化 |
-| 7 | deploy.sh | AWS S3 + CloudFront 自動デプロイ |
-| 7 | れんらく本実装 | 本物のメールアドレス・GitHubリンク差し込み |
-| 将来 | GitHub Actions | push時に自動ビルド & デプロイ |
+| 対象 | 内容 |
+|---|---|
+| Backend (Django) | 問い合わせフォーム / LOGのCMS化 |
+| れんらく本実装 | 本物のメールアドレス・GitHubリンク差し込み |
+| LOGの記事本数追加 | 残り4件をダミーから本物へ |
+| GitHub Actions | push時に自動ビルド & デプロイ |
+| シンタックスハイライト | コードブロックに highlight.js or shiki を導入 |
 
 ---
 
@@ -133,11 +180,16 @@ npm run build   # dist/ に出力
 ## アクセシビリティ
 
 - LCDモード切替ボタンに `aria-label` を付与
-- モーダル(`DatasheetModal` / `LogModal`)は `role="dialog"` + `aria-modal="true"`
-- モーダル開時は内部にフォーカスを閉じ込め、Tab/Shift+Tabで先頭⇄末尾循環
-- モーダル閉時は呼び出し元の要素にフォーカス復帰
+- モーダルは `role="dialog"` + `aria-modal="true"` + フォーカストラップ
 - ESCキー / オーバーレイクリックでモーダルを閉じられる
 - WRITINGの行は `role="button"` + `tabIndex=0` でキーボードからも開ける
+
+---
+
+## Markdown記法 (LOG本文)
+
+`logs.js` の `body` フィールドにMarkdown文字列を入れる。対応記法 (GFM準拠):
+見出し (`##`, `###`) / 強調 (`**bold**`) / リスト / インライン・ブロックコード / 引用 (`>`) / テーブル / URL自動リンク
 
 ---
 
@@ -146,9 +198,10 @@ npm run build   # dist/ に出力
 | 層 | 技術 |
 |---|---|
 | フロントエンド | React 18 / Vite |
+| Markdown描画 | react-markdown / remark-gfm |
 | スタイリング | グローバルCSS (CSS変数ベース) |
-| 状態管理 | React useState / useEffect / useRef (外部ライブラリ不使用) |
-| ホスティング | AWS S3 + CloudFront (予定) |
+| 状態管理 | React useState / useEffect / useRef |
+| ホスティング | AWS S3 + CloudFront |
 | バックエンド | Django (将来実装予定) |
 
 ---
