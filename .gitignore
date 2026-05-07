@@ -13,3 +13,6 @@ db.sqlite3
 # AWS/OS
 .aws/
 .DS_Store
+
+# Cursor
+.cursor/*

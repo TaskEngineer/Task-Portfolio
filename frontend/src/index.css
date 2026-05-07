@@ -1,111 +1,985 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
+/* ==========================================================
+   PCB BOARD PORTFOLIO — TASK
+   元HTMLの<style>内をそのままグローバルCSSとして移植したもの。
+   palette: 長時間見ても疲れない少しくすんだ緑×金×アイボリー
+   ========================================================== */
+   :root {
+    /* PCB DARK (default) */
+    --pcb-bg:        #0e2a22;
+    --pcb-bg-2:      #103428;
+    --pcb-edge:      #1c4836;
+    --copper:        #c9a96a;
+    --copper-bright: #e0c187;
+    --copper-dim:    #8a7345;
+    --silk:          #e8dcc4;
+    --silk-dim:      #b9ad8c;
+    --lcd-bg:        #6f8259;
+    --lcd-on:        #1b2415;
+    --lcd-off:       #5d6c4a;
+    --led-red:       #d96b4a;
+    --led-green:     #7fae5a;
+    --solder:        #9aa8a2;
+    --shadow:        rgba(0,0,0,.45);
+    --resin-noise:   rgba(255,255,255,.02);
+  }
+  
+  /* LCD LIGHT MODE (反射型・カシオF-91W系) */
+  html[data-mode="light"] {
+    --pcb-bg:        #b6c19c;
+    --pcb-bg-2:      #aebb93;
+    --pcb-edge:      #8a9573;
+    --copper:        #3a3220;
+    --copper-bright: #524626;
+    --copper-dim:    #5a4f30;
+    --silk:          #2a2a1c;
+    --silk-dim:      #4d4a36;
+    --lcd-bg:        #94a279;
+    --lcd-on:        #1c2410;
+    --lcd-off:       #7f8c66;
+    --led-red:       #b04a30;
+    --led-green:     #4a7035;
+    --solder:        #6c7464;
+    --shadow:        rgba(0,0,0,.18);
+    --resin-noise:   rgba(0,0,0,.02);
+  }
+  
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body {
+    font-family: "DotGothic16", "Share Tech Mono", monospace;
+    background: var(--pcb-bg);
+    color: var(--silk);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: none;
+    image-rendering: pixelated;
+    transition: background .35s ease, color .35s ease;
+  }
+  
+  /* === BOARD CONTAINER ============================================= */
+  .board-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    position: relative;
+  }
+  
+  .board {
+    position: relative;
+    background:
+      radial-gradient(ellipse at 20% 10%, var(--pcb-bg-2) 0%, var(--pcb-bg) 60%),
+      var(--pcb-bg);
+    border: 2px solid var(--pcb-edge);
+    border-radius: 14px;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,.35),
+      inset 0 0 60px rgba(0,0,0,.35),
+      0 18px 40px var(--shadow);
+    padding: 28px 28px 32px;
+    overflow: hidden;
+  }
+  
+  .board::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      radial-gradient(rgba(0,0,0,.10) 1px, transparent 1px);
+    background-size: 4px 4px, 8px 8px;
+    background-position: 0 0, 2px 2px;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: .7;
+  }
+  
+  .traces {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  .mount {
+    position: absolute;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 35%, #d8d8d0 0%, #8a8c84 35%, #4a4d44 70%, #25271f 100%);
+    box-shadow: inset 0 0 0 2px var(--copper-dim), 0 1px 2px rgba(0,0,0,.5);
+    z-index: 5;
+  }
+  .mount::after {
+    content: ""; position: absolute; inset: 6px;
+    background: #1a1c14; border-radius: 50%;
+    box-shadow: inset 0 0 2px rgba(0,0,0,.8);
+  }
+  .mount.tl { top: 10px; left: 10px; }
+  .mount.tr { top: 10px; right: 10px; }
+  .mount.bl { bottom: 10px; left: 10px; }
+  .mount.br { bottom: 10px; right: 10px; }
+  
+  /* === HEADER ====================================================== */
+  .header {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: end;
+    padding: 6px 12px 22px;
+    border-bottom: 1px dashed var(--copper-dim);
+    margin-bottom: 22px;
+  }
+  .silk-title {
+    color: var(--silk);
+    letter-spacing: .12em;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .silk-title .big {
+    display: block;
+    font-family: "DotGothic16", monospace;
+    font-size: 34px;
+    letter-spacing: .04em;
+    color: var(--silk);
+    margin-bottom: 4px;
+    text-shadow: 0 0 0.5px var(--silk-dim);
+  }
+  .silk-title .pn {
+    color: var(--copper-bright);
+    letter-spacing: .2em;
+  }
+  .silk-title .small {
+    display: block;
+    color: var(--silk-dim);
+    font-size: 11px;
+    margin-top: 6px;
+    max-width: 60ch;
+  }
+  
+  /* === LCD =========================================================*/
+  .lcd-cluster {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .lcd {
+    background:
+      linear-gradient(180deg, color-mix(in oklab, var(--lcd-bg) 100%, #000 8%) 0%, var(--lcd-bg) 100%);
+    border: 2px solid #1c2415;
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.18),
+      inset 0 -2px 0 rgba(0,0,0,.25),
+      inset 0 0 0 4px color-mix(in oklab, var(--lcd-bg) 90%, #000 10%),
+      0 2px 0 #2a3522;
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: var(--lcd-on);
+    font-family: "Share Tech Mono", monospace;
+    position: relative;
+  }
+  .lcd .lcd-label {
+    font-size: 9px;
+    letter-spacing: .25em;
+    color: var(--lcd-on);
+    opacity: .55;
+    margin-bottom: 2px;
+  }
+  .lcd-clock {
+    min-width: 200px;
+    text-align: right;
+  }
+  .seg {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 32px;
+    letter-spacing: .08em;
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+  }
+  .seg::before {
+    content: attr(data-ghost);
+    position: absolute;
+    inset: 0;
+    color: var(--lcd-off);
+    opacity: .35;
+    pointer-events: none;
+  }
+  .lcd-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 9px;
+    letter-spacing: .2em;
+    margin-top: 3px;
+    opacity: .7;
+  }
+  
+  .lcd-mode-btn {
+    background: transparent;
+    border: 1.5px solid var(--copper);
+    color: var(--copper-bright);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 64px;
+    transition: all .15s;
+  }
+  .lcd-mode-btn:hover { background: rgba(201,169,106,.1); }
+  .lcd-mode-btn:active { transform: translateY(1px); }
+  .lcd-mode-btn .ic { font-size: 14px; }
+  
+  /* === TABS ======================================================== */
+  .tabs {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .tab {
+    appearance: none;
+    background: linear-gradient(180deg, #2a3a30 0%, #1a2820 100%);
+    border: 1px solid var(--copper-dim);
+    border-radius: 4px;
+    color: var(--silk-dim);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .18em;
+    padding: 14px 8px 10px;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    transition: all .15s;
+  }
+  html[data-mode="light"] .tab {
+    background: linear-gradient(180deg, #98a481 0%, #889471 100%);
+  }
+  .tab:hover { color: var(--silk); border-color: var(--copper); }
+  .tab .num {
+    display: block;
+    font-size: 9px;
+    color: var(--copper-bright);
+    margin-bottom: 4px;
+    letter-spacing: .25em;
+  }
+  .tab .jp {
+    display: block;
+    font-family: "DotGothic16", monospace;
+    font-size: 10px;
+    color: var(--silk-dim);
+    margin-top: 4px;
+    letter-spacing: .1em;
+  }
+  .tab.active {
+    background: linear-gradient(180deg, var(--copper-dim) 0%, var(--copper) 100%);
+    border-color: var(--copper-bright);
+    color: #1a1408;
+    box-shadow: 0 0 0 1px var(--copper-bright), 0 0 12px rgba(224,193,135,.25);
+  }
+  .tab.active .num,
+  .tab.active .jp { color: #2a2008; }
+  
+  .tab .led {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--lcd-off);
+    box-shadow: inset 0 0 1px rgba(0,0,0,.5);
+  }
+  .tab.active .led {
+    background: var(--led-red);
+    box-shadow: 0 0 6px var(--led-red), inset 0 0 1px rgba(255,255,255,.5);
+  }
+  
+  /* === SCREEN ====================================================== */
+  .screen-frame {
+    position: relative;
+    z-index: 2;
+    background:
+      linear-gradient(180deg, color-mix(in oklab, var(--lcd-bg) 100%, #000 6%) 0%, var(--lcd-bg) 100%);
+    border: 2px solid #1c2415;
+    border-radius: 6px;
+    padding: 18px 22px;
+    color: var(--lcd-on);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.18),
+      inset 0 -3px 0 rgba(0,0,0,.22),
+      inset 0 0 0 4px color-mix(in oklab, var(--lcd-bg) 88%, #000 12%),
+      0 2px 0 #2a3522,
+      0 6px 0 #1c2415;
+    min-height: 520px;
+    font-family: "DotGothic16", "Share Tech Mono", monospace;
+  }
+  
+  .screen-frame::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,.04) 0 1px,
+      transparent 1px 3px
+    );
+    pointer-events: none;
+    border-radius: 4px;
+    mix-blend-mode: multiply;
+  }
+  
+  .screen-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    border-bottom: 1px dashed var(--lcd-on);
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+    opacity: .85;
+  }
+  .screen-statusbar .blink {
+    animation: blink 1.2s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  
+  /* === PANELS ====================================================== */
+  .panel { display: none; animation: panel-in .25s ease; }
+  .panel.active { display: block; }
+  @keyframes panel-in {
+    from { opacity: 0; transform: translateY(4px); filter: blur(1px); }
+    to { opacity: 1; transform: none; filter: none; }
+  }
+  
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 22px;
+  }
+  .avatar-card {
+    border: 1.5px dashed var(--lcd-on);
+    padding: 8px;
+    background: color-mix(in oklab, var(--lcd-bg) 88%, #000 12%);
+  }
+  .avatar {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: var(--lcd-on);
+    color: var(--lcd-bg);
+    display: grid;
+    place-items: center;
+    font-family: "Press Start 2P", monospace;
+    font-size: 18px;
+    letter-spacing: .1em;
+    image-rendering: pixelated;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar svg { width: 80%; height: 80%; }
+  
+  .avatar-card .label {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-align: center;
+    margin-top: 6px;
+    color: var(--lcd-on);
+  }
+  
+  .about-text h2 {
+    font-family: "DotGothic16", monospace;
+    font-size: 22px;
+    margin: 0 0 4px;
+    letter-spacing: .04em;
+  }
+  .about-text .role {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .2em;
+    opacity: .7;
+    margin-bottom: 12px;
+  }
+  .about-text p {
+    font-family: "DotGothic16", monospace;
+    font-size: 14px;
+    line-height: 1.85;
+    margin: 0 0 12px;
+    text-wrap: pretty;
+  }
+  .speech {
+    border: 2px solid var(--lcd-on);
+    border-radius: 2px;
+    padding: 12px 14px 14px;
+    margin-top: 14px;
+    position: relative;
+    background: color-mix(in oklab, var(--lcd-bg) 95%, #fff 5%);
+  }
+  .speech::after {
+    content: "▼";
+    position: absolute;
+    bottom: 6px; right: 10px;
+    font-size: 10px;
+    animation: blink 1.2s steps(2) infinite;
+  }
+  .speech .who {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    opacity: .65;
+    margin-bottom: 4px;
+  }
+  .speech .line {
+    font-family: "DotGothic16", monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 1.7em;
+  }
+  
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+  }
+  .spec-table th, .spec-table td {
+    text-align: left;
+    border-bottom: 1px dotted var(--lcd-on);
+    padding: 5px 4px;
+    vertical-align: top;
+  }
+  .spec-table th {
+    font-weight: normal;
+    width: 28%;
+    color: var(--lcd-on);
+    opacity: .65;
+    letter-spacing: .2em;
+  }
+  
+  /* WORKS */
+  .works-list { display: flex; flex-direction: column; gap: 12px; }
+  .work-card {
+    border: 1.5px solid var(--lcd-on);
+    padding: 14px 16px;
+    background: color-mix(in oklab, var(--lcd-bg) 95%, #fff 5%);
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    cursor: pointer;
+    transition: all .15s;
+    position: relative;
+  }
+  .work-card:hover {
+    background: color-mix(in oklab, var(--lcd-bg) 88%, #fff 12%);
+    transform: translateX(2px);
+  }
+  .work-card .ic {
+    width: 60px;
+    height: 60px;
+    border: 1.5px solid var(--lcd-on);
+    display: grid;
+    place-items: center;
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px;
+    background: color-mix(in oklab, var(--lcd-bg) 80%, #000 20%);
+    color: var(--lcd-bg);
+  }
+  .work-card .ic svg { width: 80%; height: 80%; }
+  .work-card .body h3 {
+    font-family: "DotGothic16", monospace;
     font-size: 16px;
+    margin: 0 0 4px;
+    letter-spacing: .04em;
   }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  .work-card .body p {
+    font-family: "DotGothic16", monospace;
+    font-size: 12px;
+    margin: 0 0 4px;
+    line-height: 1.5;
+    opacity: .85;
   }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+  .work-card .meta {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    opacity: .6;
   }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+  .work-card .arrow {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 18px;
+    color: var(--lcd-on);
+    opacity: .7;
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+  .work-card.dummy::before {
+    content: "DUMMY";
+    position: absolute;
+    top: 6px; right: 8px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 8px;
+    letter-spacing: .2em;
+    opacity: .35;
   }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
+  
+  /* WRITING */
+  .writing-list { display: flex; flex-direction: column; }
+  .write-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    gap: 12px;
+    padding: 10px 4px;
+    border-bottom: 1px dotted var(--lcd-on);
+    align-items: baseline;
+    font-family: "DotGothic16", monospace;
+    font-size: 13px;
+  }
+  .write-row .date {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .15em;
+    opacity: .65;
+  }
+  .write-row .tag {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    border: 1px solid var(--lcd-on);
+    padding: 2px 5px;
+    opacity: .8;
+  }
+  
+  /* SKILLS */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 22px;
+    margin-bottom: 22px;
+  }
+  .skill {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .12em;
+  }
+  .skill .name {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .skill .name .pct { opacity: .65; font-size: 10px; }
+  .meter {
+    height: 12px;
+    background: color-mix(in oklab, var(--lcd-bg) 80%, #000 20%);
+    border: 1px solid var(--lcd-on);
+    position: relative;
+    overflow: hidden;
+  }
+  .meter::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--lcd-on) 0 6px,
+      transparent 6px 8px
+    );
+    width: var(--w, 0%);
+    transition: width .8s ease;
+  }
+  .meter::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--lcd-off) 0 6px,
+      transparent 6px 8px
+    );
+    opacity: .3;
+  }
+  
+  .cert-list {
+    list-style: none;
+    padding: 0; margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 14px;
+  }
+  .cert-list li {
+    font-family: "DotGothic16", monospace;
+    font-size: 13px;
+    padding-left: 18px;
+    position: relative;
+  }
+  .cert-list li::before {
+    content: "▶";
+    position: absolute;
+    left: 2px; top: 1px;
+    font-size: 10px;
+    color: var(--lcd-on);
+    opacity: .8;
+  }
+  
+  .section-h {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .25em;
+    border-bottom: 1px dashed var(--lcd-on);
+    padding-bottom: 4px;
+    margin: 18px 0 12px;
+    opacity: .85;
+  }
+  
+  /* === COMMAND BAR ================================================ */
+  .cmd-bar {
+    position: relative;
+    z-index: 2;
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .cmd-btn {
+    appearance: none;
+    background: transparent;
+    border: 2px solid var(--copper);
+    border-radius: 2px;
+    color: var(--silk);
+    font-family: "DotGothic16", monospace;
+    font-size: 14px;
+    letter-spacing: .12em;
+    padding: 10px 12px;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    transition: all .12s;
+  }
+  .cmd-btn:hover {
+    background: rgba(201,169,106,.08);
+    border-color: var(--copper-bright);
+  }
+  .cmd-btn:active { transform: translateY(1px); }
+  .cmd-btn::before {
+    content: "▶";
+    color: var(--copper-bright);
+    margin-right: 8px;
+    font-size: 10px;
+    vertical-align: middle;
+  }
+  
+  /* === DIALOG ====================================================== */
+  .dialog {
+    position: relative;
+    z-index: 2;
+    margin-top: 12px;
+    border: 2px solid var(--silk);
+    border-radius: 2px;
+    padding: 14px 16px 18px;
+    background: rgba(0,0,0,.25);
+    font-family: "DotGothic16", monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--silk);
+    min-height: 70px;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.5), 0 0 0 1px var(--silk-dim);
+  }
+  html[data-mode="light"] .dialog {
+    background: rgba(255,255,255,.18);
+    color: var(--silk);
+  }
+  .dialog::after {
+    content: "▼";
+    position: absolute;
+    bottom: 6px; right: 12px;
+    color: var(--silk);
+    animation: blink 1.2s steps(2) infinite;
+    font-size: 11px;
+  }
+  .dialog .speaker {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--copper-bright);
+    margin-bottom: 4px;
+  }
+  
+  /* === FOOTER ====================================================== */
+  .footer {
+    position: relative;
+    z-index: 2;
+    margin-top: 22px;
+    border-top: 1px dashed var(--copper-dim);
+    padding-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--silk-dim);
+  }
+  .footer .copper { color: var(--copper-bright); }
+  
+  /* === COMPONENT DECORATIONS ======================================= */
+  .chip-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin: 10px 4px 18px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    background: #14140e;
+    border: 1px solid #25241a;
+    color: var(--silk);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .15em;
+    padding: 6px 14px;
+    position: relative;
+    border-radius: 2px;
+  }
+  html[data-mode="light"] .chip {
+    background: #2a2818; color: var(--silk-dim);
+  }
+  .chip::before, .chip::after {
+    content: "";
+    position: absolute; top: 50%;
+    width: 6px; height: 1.5px;
+    background: var(--copper);
+    transform: translateY(-50%);
+  }
+  .chip::before { left: -6px; }
+  .chip::after { right: -6px; }
+  
+  .resistor {
+    width: 38px; height: 8px;
+    background: #d4b896;
+    position: relative;
+    border-radius: 2px;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.15);
+  }
+  .resistor::before, .resistor::after {
+    content: ""; position: absolute; top: 3px;
+    width: 18px; height: 2px;
+    background: var(--copper);
+  }
+  .resistor::before { left: -16px; }
+  .resistor::after { right: -16px; }
+  .resistor i {
+    position: absolute; top: 0; bottom: 0; width: 3px;
+    background: #6b3e2e;
+  }
+  .resistor i:nth-child(1) { left: 6px; background: #c14a3a; }
+  .resistor i:nth-child(2) { left: 12px; background: #2a2820; }
+  .resistor i:nth-child(3) { left: 18px; background: #c8a04a; }
+  
+  .led-pin {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--led-green);
+    box-shadow: 0 0 8px var(--led-green), inset 0 -2px 2px rgba(0,0,0,.4);
+    position: relative;
+  }
+  .led-pin::before, .led-pin::after {
+    content: ""; position: absolute; top: 50%;
+    width: 8px; height: 1.5px; background: var(--copper);
+    transform: translateY(-50%);
+  }
+  .led-pin::before { left: -8px; }
+  .led-pin::after { right: -8px; }
+  
+  /* === DATASHEET / LOG MODAL (Step 5で使用)========================= */
+  .ds-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    animation: ds-fade .18s ease;
+  }
+  .ds-overlay.open { display: flex; }
+  @keyframes ds-fade { from { opacity: 0; } to { opacity: 1; } }
+  
+  .ds-sheet {
+    width: min(900px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+    background:
+      linear-gradient(180deg, color-mix(in oklab, var(--lcd-bg) 100%, #000 6%) 0%, var(--lcd-bg) 100%);
+    border: 2px solid #1c2415;
+    border-radius: 6px;
+    color: var(--lcd-on);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.18),
+      inset 0 -3px 0 rgba(0,0,0,.22),
+      inset 0 0 0 4px color-mix(in oklab, var(--lcd-bg) 88%, #000 12%),
+      0 12px 40px rgba(0,0,0,.6);
+    font-family: "DotGothic16", monospace;
+    position: relative;
+    animation: ds-pop .22s cubic-bezier(.2,.8,.2,1.2);
+  }
+  @keyframes ds-pop {
+    from { opacity: 0; transform: translateY(8px) scale(.98); filter: blur(2px); }
+    to { opacity: 1; transform: none; filter: none; }
+  }
+  
+  .ds-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px dashed var(--lcd-on);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: .25em;
+  }
+  .ds-head .pn { color: var(--lcd-on); }
+  .ds-head .pn b { color: var(--copper); margin-right: 6px; letter-spacing:.15em; }
+  .ds-close {
+    appearance: none;
+    background: transparent;
+    border: 1.5px solid var(--lcd-on);
+    color: var(--lcd-on);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .15em;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .ds-close:hover { background: rgba(0,0,0,.15); }
+  
+  .ds-body {
+    padding: 18px 22px 22px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 22px;
+  }
+  .ds-screenshot {
+    border: 1.5px dashed var(--lcd-on);
+    background: color-mix(in oklab, var(--lcd-bg) 80%, #000 20%);
+    aspect-ratio: 3/4;
+    display: grid;
+    place-items: center;
+    image-rendering: pixelated;
+  }
+  .ds-screenshot svg { width: 80%; height: 80%; }
+  .ds-screenshot .cap {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-align: center;
+    margin-top: 6px;
+    opacity: .6;
+  }
+  
+  .ds-main h2 {
+    font-family: "DotGothic16", monospace;
+    font-size: 22px;
+    margin: 0 0 4px;
+    letter-spacing: .04em;
+  }
+  .ds-main .sub {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .2em;
+    opacity: .7;
+    margin-bottom: 12px;
+  }
+  .ds-main p {
+    font-family: "DotGothic16", monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    margin: 0 0 10px;
+  }
+  .ds-section-h {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .25em;
+    border-bottom: 1px dashed var(--lcd-on);
+    padding-bottom: 4px;
+    margin: 18px 0 10px;
+    opacity: .85;
+  }
+  .ds-pinout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 14px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+  }
+  .ds-pinout span {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 6px;
+  }
+  .ds-pinout span b {
+    color: var(--copper);
+    font-weight: normal;
+  }
+  .ds-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ds-tags span {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    border: 1px solid var(--lcd-on);
+    padding: 3px 6px;
+    opacity: .85;
+  }
+  .cap-strip {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-align: center;
+    margin-top: 6px;
+    opacity: .6;
+  }
+  .ds-foot {
+    border-top: 1px dashed var(--lcd-on);
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 9px;
+    letter-spacing: .25em;
+    opacity: .7;
+  }
+  .ds-foot .blink { animation: blink 1.2s steps(2) infinite; }
+  
+  /* === RESPONSIVE ================================================== */
+  @media (max-width: 760px) {
+    .ds-body { grid-template-columns: 1fr; }
+    .ds-pinout { grid-template-columns: 1fr; }
+    .ds-screenshot { aspect-ratio: 4/3; }
+    .header { grid-template-columns: 1fr; }
+    .lcd-cluster { justify-content: flex-start; }
+    .about-grid { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: 1fr; }
+    .cert-list { grid-template-columns: 1fr; }
+    .cmd-bar { grid-template-columns: repeat(2, 1fr); }
+    .work-card { grid-template-columns: 50px 1fr; }
+    .work-card .arrow { display: none; }
+    .silk-title .big { font-size: 26px; }
+  }
