@@ -7,7 +7,7 @@
 
 ## 構成
 
-\`\`\`text
+```text
 task-portfolio/
 ├── .git/
 ├── .gitignore
@@ -19,44 +19,41 @@ task-portfolio/
 │   ├── vite.config.js
 │   └── src/
 │       ├── main.jsx
-│       ├── App.jsx            # タブ状態管理 / 全体レイアウト
+│       ├── App.jsx            # タブ/モーダル/Dialog状態の集約
 │       ├── index.css          # グローバルCSS (CSS変数 / PCBテクスチャ / LCD)
 │       ├── components/
-│       │   ├── Header.jsx     # タイトル + LCD時計 (useClock / useLcdMode)
-│       │   ├── ChipRow.jsx    # 装飾チップ・抵抗・LED
-│       │   ├── Tabs.jsx       # CH01〜CH04 タブ切替
-│       │   ├── Screen.jsx     # ステータスバー + パネル切替
-│       │   ├── CommandBar.jsx # はなす / しらべる / もちもの / れんらく
-│       │   ├── Dialog.jsx     # MOTHER風ダイアログ表示エリア
-│       │   ├── Footer.jsx     # コピーライト + ビルドID (useUptime / useRandomId)
-│       │   ├── BoardTraces.jsx # 背景SVG回路トレース
+│       │   ├── Header.jsx          # タイトル + LCD時計エリア
+│       │   ├── ChipRow.jsx         # 装飾チップ・抵抗・LED
+│       │   ├── Tabs.jsx            # CH01〜CH04 タブ切替
+│       │   ├── Screen.jsx          # ステータスバー + パネル切替
+│       │   ├── CommandBar.jsx      # はなす / しらべる / もちもの / れんらく
+│       │   ├── Dialog.jsx          # MOTHER風ダイアログ (タイプライタ表示)
+│       │   ├── DatasheetModal.jsx  # WORKS詳細モーダル
+│       │   ├── LogModal.jsx        # WRITING詳細モーダル
+│       │   ├── Footer.jsx          # コピーライト + ビルドID
+│       │   ├── BoardTraces.jsx     # 背景SVG回路トレース
 │       │   └── panels/
-│       │       ├── About.jsx  # ピクセルアバター(写真参考) / AboutLine(useTypewriter)
-│       │       ├── Works.jsx
+│       │       ├── About.jsx
+│       │       ├── Works.jsx       # クリックで DatasheetModal を発火
 │       │       ├── Skills.jsx
-│       │       └── Writing.jsx
+│       │       └── Writing.jsx     # クリックで LogModal を発火
 │       ├── data/
 │       │   ├── works.js       # WORKSデータ (4件)
 │       │   └── logs.js        # WRITINGダミーデータ (5件)
-│       └── hooks/
-│           ├── useClock.js        # LCD時計・曜日・日付のリアルタイム更新
-│           ├── useUptime.js       # マウント時刻からの経過時間カウントアップ
-│           ├── useLcdMode.js      # ダーク/ライトモード切替 + localStorage保存
-│           ├── useTypewriter.js   # MOTHER風一文字ずつ表示アニメーション
-│           └── useRandomId.js     # 起動時ランダムID生成 (Serial / BuildID)
+│       └── hooks/             # カスタムフック (Step 4で実装)
 └── backend/                   # Django (将来実装)
     └── requirements.txt
-\`\`\`
+```
 
 ---
 
 ## セットアップ
 
-\`\`\`bash
+```bash
 cd frontend
 npm install
 npm run dev
-\`\`\`
+```
 
 ブラウザで `http://localhost:5173` を開く。
 
@@ -64,11 +61,11 @@ npm run dev
 
 ## ビルド & デプロイ
 
-\`\`\`bash
+```bash
 cd frontend
 npm run build   # dist/ に出力
 # S3へのデプロイは deploy.sh で実装予定
-\`\`\`
+```
 
 ---
 
@@ -78,23 +75,37 @@ npm run build   # dist/ に出力
 
 | Step | 対象 | 内容 |
 |---|---|---|
-| 1–3 | グローバルCSS / データ層 / 全コンポーネント | CSS変数 / PCBテクスチャ / LCD / 全パネル表示 |
+| 1 | グローバルCSS | CSS変数 / PCBテクスチャ / LCD / レスポンシブ対応 |
+| 1 | データ層 | works.js / logs.js をモジュール化 |
+| 2 | 全体レイアウト | board / board-wrap / マウントネジ / 背景SVG |
+| 2 | Header | タイトル・シリアル表示・LCD枠 |
+| 2 | Tabs | CH01〜CH04 クリックでパネル切替 |
+| 2 | Screen | ステータスバー + 各パネル表示切替 |
+| 3 | About | アバター / スペックテーブル / 自己紹介文 |
+| 3 | Works | WORKSリスト表示 (カード4件) |
+| 3 | Skills | ABILITYメーター / 資格リスト / INVENTORY |
+| 3 | Writing | LOGリスト表示 (5件) |
+| 3 | Footer | コピーライト + ビルドID表示 |
 | 4 | `useClock` | LCD時計・曜日・日付のリアルタイム更新 |
-| 4 | `useUptime` | マウント時刻からの経過時間カウントアップ |
-| 4 | `useLcdMode` | ダーク/ライトモード切替 + localStorage保存 |
+| 4 | `useUptime` | uptime カウントアップ |
+| 4 | `useLcdMode` | ダーク / ライトモード切替 + localStorage保存 |
 | 4 | `useTypewriter` | MOTHER風一文字ずつ表示アニメーション |
-| 4 | `useRandomId` | 起動時ランダムID生成 (Serial / BuildID) |
-| 4 | Header.jsx | フック組み込み・モードボタン動作 |
-| 4 | Footer.jsx | フック組み込み・BuildID/Uptime動的表示 |
-| 4 | About.jsx | ピクセルアバター更新・AboutLine定期切替 |
+| **5** | **CommandBar** | **はなす / しらべる / もちもの / れんらく の発火ロジック** |
+| **5** | **Dialog** | **CommandBar からの text を受けてタイプライタ再生** |
+| **5** | **DatasheetModal** | **WORKSカードクリックで開く詳細モーダル (ESC / オーバーレイで閉)** |
+| **5** | **LogModal** | **Writingリストクリックで開くログビューア (ESC / オーバーレイで閉)** |
+| **5** | **App** | **モーダル/Dialog状態を集約 (selectedWork / selectedLog / dialogText)** |
 
 ### 未実装 (次フェーズ)
 
-| 対象 | 内容 |
-|---|---|
-| CommandBar | はなす / しらべる / もちもの / れんらく の発火ロジック |
-| DatasheetModal | WORKSカードクリックで開く詳細モーダル |
-| LogModal | Writingリストクリックで開くログビューア |
+| Step | 対象 | 内容 |
+|---|---|---|
+| 6 | AboutLine | 自己紹介文の定期切替アニメーション |
+| 6 | Serial / BuildID | 起動時ランダム生成 |
+| 6 | フォーカストラップ | モーダル内Tabキー巡回 (アクセシビリティ強化) |
+| 6 | LogModal本文 | ダミー以外の本文(Markdown対応など) |
+| 7 | Backend (Django) | 問い合わせフォーム / LOGのCMS化 |
+| 7 | deploy.sh | AWS S3 + CloudFront 自動デプロイ |
 
 ---
 

@@ -1,6 +1,6 @@
 import { WORKS } from '../../data/works.js';
 
-export default function Works() {
+export default function Works({ onOpen }) {
   return (
     <div className="panel active" data-panel="works">
       <div className="section-h">▼ EQUIPPED PROJECTS / そうびちゅうのプロジェクト</div>
@@ -12,7 +12,15 @@ export default function Works() {
             className={`work-card${w.dummy ? ' dummy' : ''}`}
             data-work={w.id}
             tabIndex={0}
-            // TODO(next): クリックで Datasheet モーダルを開く
+            role="button"
+            aria-label={`${w.title} のデータシートを開く`}
+            onClick={() => onOpen?.(w)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onOpen?.(w);
+              }
+            }}
           >
             <div className="ic">
               {/* SVG文字列を直接挿入(自前データなので安全) */}
