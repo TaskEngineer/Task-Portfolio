@@ -983,3 +983,138 @@
     .work-card .arrow { display: none; }
     .silk-title .big { font-size: 26px; }
   }
+
+/* === LOG MARKDOWN ================================================ */
+/* react-markdown が出力するHTMLにスタイルを当てる。
+   .log-md の配下を狙うことで、他のh2/pに影響しないようにする */
+  .log-md {
+  font-family: "DotGothic16", monospace;
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--lcd-on);
+}
+
+.log-md h2 {
+  font-family: "DotGothic16", monospace;
+  font-size: 18px;
+  letter-spacing: .04em;
+  margin: 22px 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed var(--lcd-on);
+}
+
+.log-md h3 {
+  font-family: "DotGothic16", monospace;
+  font-size: 15px;
+  margin: 18px 0 8px;
+  letter-spacing: .04em;
+}
+
+.log-md p {
+  margin: 10px 0;
+}
+
+.log-md strong {
+  /* 強調は銅箔色に。基板テーマと整合 */
+  color: var(--copper-bright);
+  font-weight: bold;
+}
+
+.log-md em {
+  font-style: normal;
+  /* イタリックは見にくいので、代わりに下線で表現 */
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.log-md ul,
+.log-md ol {
+  margin: 10px 0;
+  padding-left: 22px;
+}
+
+.log-md li {
+  margin: 4px 0;
+}
+
+.log-md ul li::marker {
+  content: "▶ ";
+  color: var(--copper);
+}
+
+/* インラインコード */
+.log-md code {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 13px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid var(--copper-dim);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--copper-bright);
+}
+
+/* コードブロック (pre > code の組み合わせ) */
+.log-md pre {
+  background: rgba(0,0,0,.28);
+  border: 1px solid var(--copper-dim);
+  border-left: 3px solid var(--copper);
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 14px 0;
+  border-radius: 2px;
+}
+.log-md pre code {
+  /* pre 内の code は枠線・背景を解除 (二重に当たるのを防ぐ) */
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--silk);
+  white-space: pre;
+}
+
+/* 引用 */
+.log-md blockquote {
+  border-left: 3px solid var(--copper);
+  padding: 4px 14px;
+  margin: 14px 0;
+  color: var(--lcd-on);
+  background: rgba(255,255,255,.06);
+  font-style: normal;
+  opacity: .9;
+}
+
+/* リンク */
+.log-md a {
+  color: var(--copper-bright);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.log-md a:hover {
+  color: var(--silk);
+}
+
+/* テーブル (GFM) */
+.log-md table {
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.log-md th,
+.log-md td {
+  border: 1px solid var(--copper-dim);
+  padding: 6px 10px;
+  text-align: left;
+}
+.log-md th {
+  background: rgba(0,0,0,.2);
+  color: var(--copper-bright);
+}
+
+/* 区切り線 */
+.log-md hr {
+  border: none;
+  border-top: 1px dashed var(--copper-dim);
+  margin: 22px 0;
+} 
