@@ -1,6 +1,14 @@
 import { LOGS } from '../../data/logs.js';
 
-export default function Writing() {
+export default function Writing({ onOpen }) {
+  const handleOpen = (log) => onOpen?.(log);
+  const handleKey = (e, log) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleOpen(log);
+    }
+  };
+
   return (
     <div className="panel active" data-panel="writing">
       <div className="section-h">▼ LOG / きろく</div>
@@ -12,8 +20,11 @@ export default function Writing() {
             className="write-row"
             data-log={l.id}
             tabIndex={0}
+            role="button"
+            aria-label={`${l.title} のログを開く`}
             style={{ cursor: 'pointer' }}
-            // TODO(next): クリックで Log モーダルを開く
+            onClick={() => handleOpen(l)}
+            onKeyDown={(e) => handleKey(e, l)}
           >
             <span className="date">{l.date}</span>
             <span>{l.title}</span>
@@ -31,7 +42,7 @@ export default function Writing() {
           marginTop: 14,
         }}
       >
-        ▶ ぎょう を クリック すると LOG VIEWER が ひらきます。 「▶ ぜんぶ読む」は じゅんびちゅう です。
+        ▶ ぎょう を クリック すると LOG VIEWER が ひらきます。
       </p>
 
       <div className="section-h">▼ NOTE</div>
