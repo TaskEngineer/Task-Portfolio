@@ -1,12 +1,12 @@
-// WORKSカードをクリックしたときに開く、データシート風モーダル
-// - 受け取った work が null/undefined のときは何もrenderしない(=閉)
-// - ESC / オーバーレイクリック / 閉じるボタンで onClose を呼ぶ
-// - body の scroll は開いている間ロック(背景がスクロールしないように)
+// frontend/src/components/DatasheetModal.jsx
+// Step6: フォーカストラップ追加
 import { useEffect } from 'react';
+import useFocusTrap from '../hooks/useFocusTrap.js';
 
 export default function DatasheetModal({ work, onClose }) {
-  // 開いているかどうかは work の有無で判定
-  const open = !!work;
+    const open = !!work;
+    // フォーカストラップ用 ref。open が true のときだけ罠が起動する。
+    const trapRef = useFocusTrap(open);
 
   // ESCキーで閉じる + body scrollロック
   useEffect(() => {
@@ -43,7 +43,8 @@ export default function DatasheetModal({ work, onClose }) {
       aria-modal="true"
       aria-label={`データシート: ${work.title}`}
     >
-      <div className="ds-sheet">
+      {/* シートにrefを付ける。tabIndex=-1 はフォーカス可能要素が無いときの避難先 */}
+      <div className="ds-sheet" ref={trapRef} tabIndex={-1}>
         {/* ヘッダ: 型番・REV / 閉じるボタン */}
         <div className="ds-head">
           <span className="pn">

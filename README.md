@@ -12,36 +12,42 @@ task-portfolio/
 ├── .git/
 ├── .gitignore
 ├── README.md
-├── deploy.sh                  # AWS CLIによる自動デプロイ (将来実装)
-├── frontend/                  # React (Vite) プロジェクト
-│   ├── index.html             # Google Fontsの読み込み含む
+├── deploy.sh                       # AWS CLIによる自動デプロイ (将来実装)
+├── frontend/                       # React (Vite) プロジェクト
+│   ├── index.html                  # Google Fontsの読み込み含む
 │   ├── package.json
 │   ├── vite.config.js
 │   └── src/
 │       ├── main.jsx
-│       ├── App.jsx            # タブ/モーダル/Dialog状態の集約
-│       ├── index.css          # グローバルCSS (CSS変数 / PCBテクスチャ / LCD)
+│       ├── App.jsx                 # タブ/モーダル/Dialog状態の集約
+│       ├── index.css               # グローバルCSS (CSS変数 / PCBテクスチャ / LCD)
 │       ├── components/
-│       │   ├── Header.jsx          # タイトル + LCD時計エリア
+│       │   ├── Header.jsx          # タイトル + LCD時計 + LCDモード切替ボタン
 │       │   ├── ChipRow.jsx         # 装飾チップ・抵抗・LED
 │       │   ├── Tabs.jsx            # CH01〜CH04 タブ切替
 │       │   ├── Screen.jsx          # ステータスバー + パネル切替
 │       │   ├── CommandBar.jsx      # はなす / しらべる / もちもの / れんらく
 │       │   ├── Dialog.jsx          # MOTHER風ダイアログ (タイプライタ表示)
-│       │   ├── DatasheetModal.jsx  # WORKS詳細モーダル
-│       │   ├── LogModal.jsx        # WRITING詳細モーダル
-│       │   ├── Footer.jsx          # コピーライト + ビルドID
+│       │   ├── DatasheetModal.jsx  # WORKS詳細モーダル (フォーカストラップ対応)
+│       │   ├── LogModal.jsx        # WRITING詳細モーダル (フォーカストラップ対応)
+│       │   ├── Footer.jsx          # コピーライト + ビルドID + uptime
 │       │   ├── BoardTraces.jsx     # 背景SVG回路トレース
 │       │   └── panels/
-│       │       ├── About.jsx
+│       │       ├── About.jsx       # AboutLine 定期切替 + タイプライタ表示
 │       │       ├── Works.jsx       # クリックで DatasheetModal を発火
 │       │       ├── Skills.jsx
 │       │       └── Writing.jsx     # クリックで LogModal を発火
 │       ├── data/
-│       │   ├── works.js       # WORKSデータ (4件)
-│       │   └── logs.js        # WRITINGダミーデータ (5件)
-│       └── hooks/             # カスタムフック (Step 4で実装)
-└── backend/                   # Django (将来実装)
+│       │   ├── works.js            # WORKSデータ (4件)
+│       │   └── logs.js             # WRITINGダミーデータ (5件)
+│       └── hooks/
+│           ├── useClock.js         # LCD時計
+│           ├── useUptime.js        # uptimeカウント
+│           ├── useLcdMode.js       # LCDダーク/ライト切替
+│           ├── useTypewriter.js    # タイピングアニメ
+│           ├── useRandomId.js      # 起動毎ランダムID (Serial / BuildID)
+│           └── useFocusTrap.js     # モーダル内フォーカストラップ (Step6)
+└── backend/                        # Django (将来実装)
     └── requirements.txt
 ```
 
@@ -90,22 +96,28 @@ npm run build   # dist/ に出力
 | 4 | `useUptime` | uptime カウントアップ |
 | 4 | `useLcdMode` | ダーク / ライトモード切替 + localStorage保存 |
 | 4 | `useTypewriter` | MOTHER風一文字ずつ表示アニメーション |
-| **5** | **CommandBar** | **はなす / しらべる / もちもの / れんらく の発火ロジック** |
-| **5** | **Dialog** | **CommandBar からの text を受けてタイプライタ再生** |
-| **5** | **DatasheetModal** | **WORKSカードクリックで開く詳細モーダル (ESC / オーバーレイで閉)** |
-| **5** | **LogModal** | **Writingリストクリックで開くログビューア (ESC / オーバーレイで閉)** |
-| **5** | **App** | **モーダル/Dialog状態を集約 (selectedWork / selectedLog / dialogText)** |
+| 5 | CommandBar | はなす / しらべる / もちもの / れんらく の発火ロジック |
+| 5 | Dialog | CommandBar からの text を受けてタイプライタ再生 |
+| 5 | DatasheetModal | WORKSカードクリックで開く詳細モーダル (ESC / オーバーレイで閉) |
+| 5 | LogModal | Writingリストクリックで開くログビューア (ESC / オーバーレイで閉) |
+| 5 | App | モーダル/Dialog状態を集約 (selectedWork / selectedLog / dialogText) |
+| 5 | `useRandomId` / Serial / BuildID | 起動時にランダム生成して Header / Footer に表示 |
+| 6 | AboutLine | 自己紹介文の定期切替 (8秒ごと) + タイプライタ表示 |
+| **6** | **`useFocusTrap`** | **モーダル内のTabフォーカスを閉じ込め、閉時は呼び出し元へ復帰** |
+| **6** | **DatasheetModal / LogModal** | **`useFocusTrap` を組み込みアクセシビリティ強化** |
+| **6** | **Header (icon bind)** | **LCDモード切替ボタンのアイコンを mode 連動に修正 (◐⇄◑)** |
+| **6** | **Header (a11y)** | **LCDモードボタンに aria-label を付与** |
+| **6** | **Dialog (typewriter)** | **`useTypewriter` の引数をオブジェクト形式に統一 (`{ speed: 36 }`)** |
 
 ### 未実装 (次フェーズ)
 
 | Step | 対象 | 内容 |
 |---|---|---|
-| 6 | AboutLine | 自己紹介文の定期切替アニメーション |
-| 6 | Serial / BuildID | 起動時ランダム生成 |
-| 6 | フォーカストラップ | モーダル内Tabキー巡回 (アクセシビリティ強化) |
-| 6 | LogModal本文 | ダミー以外の本文(Markdown対応など) |
+| 6 | LogModal本文 | ダミー以外の本文 (Markdown対応など) |
 | 7 | Backend (Django) | 問い合わせフォーム / LOGのCMS化 |
 | 7 | deploy.sh | AWS S3 + CloudFront 自動デプロイ |
+| 7 | れんらく本実装 | 本物のメールアドレス・GitHubリンク差し込み |
+| 将来 | GitHub Actions | push時に自動ビルド & デプロイ |
 
 ---
 
@@ -118,12 +130,24 @@ npm run build   # dist/ に出力
 
 ---
 
+## アクセシビリティ
+
+- LCDモード切替ボタンに `aria-label` を付与
+- モーダル(`DatasheetModal` / `LogModal`)は `role="dialog"` + `aria-modal="true"`
+- モーダル開時は内部にフォーカスを閉じ込め、Tab/Shift+Tabで先頭⇄末尾循環
+- モーダル閉時は呼び出し元の要素にフォーカス復帰
+- ESCキー / オーバーレイクリックでモーダルを閉じられる
+- WRITINGの行は `role="button"` + `tabIndex=0` でキーボードからも開ける
+
+---
+
 ## Tech Stack
 
 | 層 | 技術 |
 |---|---|
 | フロントエンド | React 18 / Vite |
 | スタイリング | グローバルCSS (CSS変数ベース) |
+| 状態管理 | React useState / useEffect / useRef (外部ライブラリ不使用) |
 | ホスティング | AWS S3 + CloudFront (予定) |
 | バックエンド | Django (将来実装予定) |
 

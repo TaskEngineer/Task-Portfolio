@@ -1,14 +1,15 @@
-// Dialog: 親から渡された text を MOTHER風にタイプライタ表示する
-// - useTypewriter があればそれを使う(Step 4 で実装済みの想定)
-// - text が変わるたびにアニメーションがリスタートする
+// frontend/src/components/Dialog.jsx
+// Step6: useTypewriter のオプションをオブジェクト形式に統一
 import useTypewriter from '../hooks/useTypewriter.js';
 
 const DEFAULT_TEXT =
   '『でんげんが はいりました。\nすきな チャンネルを えらんでください。』';
 
 export default function Dialog({ text }) {
-  // text が指定されなければデフォルト文を表示
-  const { display } = useTypewriter(text ?? DEFAULT_TEXT, 36); // 36ms/文字くらい
+  // useTypewriter の第2引数は { speed, delay } のオブジェクト。
+  // 以前は `useTypewriter(text, 36)` と数値を渡していたため、
+  // 第2引数が破棄されデフォルト 35ms にフォールバックしていた。
+  const { display } = useTypewriter(text ?? DEFAULT_TEXT, { speed: 36 });
 
   return (
     <div className="dialog" id="dialog" role="status" aria-live="polite">

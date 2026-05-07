@@ -1,10 +1,11 @@
-// WRITINGリストの行をクリックしたときに開く、ログビューア風モーダル
-// 構造はDatasheetModalと同じ(.ds-overlay/.ds-sheet/...) のCSSを流用
-// → 同じ見た目で、中身の構成だけ「記事用」に差し替えている
+// frontend/src/components/LogModal.jsx
+// Step6: フォーカストラップ追加
 import { useEffect } from 'react';
+import useFocusTrap from '../hooks/useFocusTrap.js';
 
 export default function LogModal({ log, onClose }) {
-  const open = !!log;
+    const open = !!log;
+    const trapRef = useFocusTrap(open);
 
   useEffect(() => {
     if (!open) return;
@@ -34,7 +35,8 @@ export default function LogModal({ log, onClose }) {
       aria-modal="true"
       aria-label={`ログ: ${log.title}`}
     >
-      <div className="ds-sheet">
+      {/* ref と tabIndex=-1 を追加 */}
+      <div className="ds-sheet" ref={trapRef} tabIndex={-1}>
         <div className="ds-head">
           <span className="pn">
             <b>P/N</b>
