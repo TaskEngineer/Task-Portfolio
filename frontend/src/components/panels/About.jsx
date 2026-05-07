@@ -1,34 +1,91 @@
+import { useEffect, useState } from 'react';
+import useTypewriter from '../../hooks/useTypewriter.js';
+
+// 切替表示するセリフ群(MOTHER風)
+const ABOUT_LINES = [
+    '「ぼくは、つよくなる とちゅう です。」',
+    '「コーヒー より モンスター エナジー。」',
+    '「『なんか動かない』を ほんやく する しごと。」',
+    '「はんだごて も つかえます。」',
+    '「チプカシ とかの ガジェット が すきだ。」',
+    '「電子音楽 を きいて やるき を だす。」',
+    '「ただ の しかく マニア の ようだ。」'
+  ];
+
+function AboutLine() {
+const [idx, setIdx] = useState(0);
+// 8秒ごとにセリフを切り替える
+useEffect(() => {
+    const id = setInterval(() => {
+    setIdx((prev) => (prev + 1) % ABOUT_LINES.length);
+    }, 8000);
+    return () => clearInterval(id);
+}, []);
+
+// タイプライター効果で表示
+const { display } = useTypewriter(ABOUT_LINES[idx], { speed: 50 });
+
+return (
+    <div className="line" id="aboutLine">
+    {display}
+    </div>
+);
+}
+
 export default function About() {
     return (
       <div className="panel active" data-panel="about">
         <div className="about-grid">
           <div>
-            <div className="avatar-card">
-              <div className="avatar" aria-label="task pixel avatar">
+          <div className="avatar-card">
+            <div className="avatar" aria-label="task pixel avatar">
                 <svg
-                  viewBox="0 0 16 16"
-                  shapeRendering="crispEdges"
-                  xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                shapeRendering="crispEdges"
+                xmlns="http://www.w3.org/2000/svg"
                 >
-                  {/* 帽子 */}
-                  <rect x="4" y="2" width="8" height="1" fill="#c9a96a" />
-                  <rect x="3" y="3" width="10" height="2" fill="#c9a96a" />
-                  <rect x="6" y="4" width="4" height="1" fill="#e0c187" />
-                  {/* 顔 */}
-                  <rect x="4" y="5" width="8" height="4" fill="#e8d6b8" />
-                  <rect x="5" y="6" width="1" height="1" fill="#1b2415" />
-                  <rect x="10" y="6" width="1" height="1" fill="#1b2415" />
-                  <rect x="6" y="8" width="4" height="1" fill="#1b2415" />
-                  {/* 体 */}
-                  <rect x="4" y="9" width="8" height="4" fill="#3a5a3a" />
-                  <rect x="6" y="10" width="4" height="1" fill="#c9a96a" />
-                  <rect x="7" y="11" width="2" height="1" fill="#c9a96a" />
-                  {/* 足 */}
-                  <rect x="5" y="13" width="2" height="2" fill="#2a2820" />
-                  <rect x="9" y="13" width="2" height="2" fill="#2a2820" />
-                </svg>
-              </div>
-              <div className="label">TASK / Lv.31</div>
+                    {/* 髪 上部 */}
+                    <rect x="3"  y="0" width="10" height="1" fill="#191008" />
+                    <rect x="2"  y="1" width="12" height="1" fill="#191008" />
+                    <rect x="1"  y="2" width="14" height="2" fill="#191008" />
+
+                    {/* 前髪(ふわっと額にかかる・左右から) */}
+                    <rect x="1"  y="4" width="4"  height="1" fill="#191008" />
+                    <rect x="11" y="4" width="4"  height="1" fill="#191008" />
+                    <rect x="1"  y="5" width="3"  height="1" fill="#191008" />
+                    <rect x="12" y="5" width="3"  height="1" fill="#191008" />
+
+                    {/* 顔ベース(丸め・ふっくら) */}
+                    <rect x="2"  y="4" width="12" height="8"  fill="#dba876" />
+
+                    {/* 目(穏やか・細め) */}
+                    <rect x="4"  y="6" width="3"  height="1" fill="#191008" />
+                    <rect x="9"  y="6" width="3"  height="1" fill="#191008" />
+
+                    {/* 鼻 */}
+                    <rect x="7"  y="8" width="2"  height="1" fill="#c08050" />
+
+                    {/* 口(端が上がった笑顔) */}
+                    <rect x="5"  y="10" width="1"  height="1" fill="#a06040" />
+                    <rect x="6"  y="11" width="4"  height="1" fill="#a06040" />
+                    <rect x="10" y="10" width="1"  height="1" fill="#a06040" />
+
+                    {/* 耳 */}
+                    <rect x="1"  y="7" width="1"  height="2" fill="#c8905e" />
+                    <rect x="14" y="7" width="1"  height="2" fill="#c8905e" />
+
+                    {/* 首 */}
+                    <rect x="6"  y="12" width="4"  height="1" fill="#c8905e" />
+
+                    {/* 体(水色シャツ) */}
+                    <rect x="1"  y="13" width="14" height="3" fill="#a8c8e8" />
+
+                    {/* えり */}
+                    <rect x="6"  y="13" width="1"  height="2" fill="#e8eef4" />
+                    <rect x="9"  y="13" width="1"  height="2" fill="#e8eef4" />
+                  </svg>
+                </div>
+                <div className="label">TASK / Lv.26</div>
             </div>
   
             <table className="spec-table" aria-label="basic spec">
@@ -69,10 +126,7 @@ export default function About() {
   
             <div className="speech">
               <div className="who">▼ TASK のはなし</div>
-              {/* 次回フックで定期切替 */}
-              <div className="line" id="aboutLine">
-                「ぼくは、つよくなる とちゅう です。」
-              </div>
+                <AboutLine />
             </div>
   
             <div className="section-h">▼ MODE OF OPERATION / 動作モード</div>
